@@ -1,12 +1,13 @@
 const faker = require('faker');
-const fs = require('fs');
-const str = "";
+const sqlite3 = require('sqlite3');
+
+// seed script
 function headerBlock() {
   let data = [];
   let count = 0;
   let rentals = ['Entire Place', 'Private Room', 'Shared Room'];
   let host = Math.floor((Math.random() * 1) + 1)
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 99; i++) {
     let current = {
       id: count,
       listingTitle: faker.lorem.words((Math.floor(Math.random() * 5) + 1)),
@@ -28,9 +29,15 @@ function headerBlock() {
   }
 }
 
-let header = new headerBlock()
-console.log(Object.values(header))
+let db = new sqlite3.Database('./headers.db', (error) => {
+  if(error) {
+    console.log('Error connecting to database.');
+  } else {
+    console.log('Connected to database.');
+  }
+})
 
-fs.writeFile('/Users/beverly/Documents/GitHub/header-service/database/data.txt',JSON.stringify(data),function(err) { 
-  if(err) return console.log(err); else console.log('file saved')
-});
+db.run(`INSERT INTO (rentalID,listingTitle,listingArea,rentalType,
+  rentalCapacity,rentalBedrooms,rentalBeds,rentalBaths,rentalDescription,userFeedback,
+  hostStatus,hostName,hostAvatarUrl,photoID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+db.run(`INSERT INTO (photoID,photoUrl,rentalID) VALUES (?,?,?)`);
