@@ -1,5 +1,5 @@
 const faker = require('faker');
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('sqlite3').verbose();
 
 // seed script
 function headerBlock() {

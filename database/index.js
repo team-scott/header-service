@@ -9,54 +9,66 @@ let db = new sqlite3.Database('./headers.db', (error) => {
   }
 })
 
-  let descriptionQuery = `INSERT INTO (rentalID,listingTitle,listingArea,rentalType,
+  let descriptionQuery = `INSERT INTO rentals(rentalID,listingTitle,listingArea,rentalType,
     rentalCapacity,rentalBedrooms,rentalBeds,rentalBaths,rentalDescription,userFeedback,
-    hostStatus,hostName,hostAvatarUrl,photoID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-  let photoQuery = `INSERT INTO (photoID,photoUrl,rentalID) VALUES (?,?,?)`;
-
+    hostStatus,hostName,hostAvatarUrl) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+  let photoQuery = `INSERT INTO photos(photoID,photoUrl,rentalID) VALUES (?,?,?)`;
   db.serialize((err) => {
     if(err) {
       console.log(err);
     }
-    let headerCount = 0;
-    let photoCount = 0;
+    let headerCount = 1;
+    let photoCount = 1;
+    let pCount = 1;
+    let types = ['Entire Place', 'Private Room', 'Shared Room'];
     let placeholder = '';
-    let host = Math.floor((Math.random() * 1) + 1);
-    let headerStatement = db.prepare(descriptionQuery);
     let photoStatement = db.prepare(photoQuery);
-    for (let i = 0; i < 99; i++) {
-      headerStatement.run(headerCount,faker.lorem.words((
-        Math.floor(Math.random() * 5) + 1)),
+    let headerStatement = db.prepare(descriptionQuery);
+    for (let i = 0; i < 100; i++) {
+      headerStatement.run(headerCount,
+        faker.lorem.words((Math.floor(Math.random() * 5) + 1)),
         faker.address.city(),
-        [Math.floor(Math.random() * 3)],
+        types[Math.floor(Math.random() * 3)],
         Math.floor((Math.random() * 6) + 1),
         Math.floor((Math.random() * 6) + 1),
         Math.floor((Math.random() * 6) + 1),
-        Math.floor((Math.random() * 3) +1 ),
+        Math.floor((Math.random() * 3) + 1),
         faker.lorem.paragraphs(3),
         faker.lorem.words(6),
-        host,
+        faker.random.boolean(),
         faker.name.findName(),
-        faker.image.avatar()
+        faker.image.avatar(),
         );
-        headerCount++;
+        headerCount++;;
       }
-      for (let x = 0; x < 99; x++) {
-        photoStatement.run(photoCount,placeholder,Math.floor(Math.random() * 100));
-        photoCount++;
+        for (let x = 0; x < 500; x++) {
+          photoStatement.run(
+            photoCount,
+            `https://s3.us-east-2.amazonaws.com/hrnyc21fec-scott-howard/photo${pCount}.jpg`,
+            Math.floor(Math.random() * 100)
+            )
+            photoCount++;
+            pCount++;
+            if(pCount >= 50) {
+              pCount = 1;
+            };
+          }
+    headerStatement.finalize((err) => {
+      if(err) {
+        console.log(err);
       }
-    headerStatement.finalize();
-    photoStatement.finalize();
+    });
+    photoStatement.finalize((err) => {
+      if(err) {
+        console.log(err);
+      }
+    });
   })
 
   db.close((err) => {
-    if(err) {
+    if (err) {
       console.log(err);
     }
-  });
+  })
 
-  module.exports = db;
-
-
-
-
+module.export = db;
